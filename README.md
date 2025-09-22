@@ -25,34 +25,8 @@ Client: **Vite + React**. Server: **Express + Socket.IO**.
 
 ## 🗺️ Architecture
 client (Vite/React) <——— HTTP (build assets) ——> server (Express)
-│ │
-└────────────── WebSocket (Socket.IO) ──────────┘
+    └────────────── WebSocket (Socket.IO) ──────────┘
 
----
-
-## 📁 Folder Structure
-chat-app/
-    client/ # Vite + React frontend
-        src/
-            components/
-                MessageList.jsx
-                MessageInput.jsx
-                UserList.jsx
-                App.jsx
-                main.jsx
-                index.html
-                package.json
-                vite.config.*
-    server/ # Express + Socket.IO backend
-        index.js # starts the server (imports app)
-        app.js # express app (exported for testing)
-        package.json
-    .github/
-        workflows/
-        ci.yml # GitHub Actions (CI)
-        .gitignore
-    README.md
----
 
 ## 🔧 Prerequisites
 - **Node.js 20.x** (recommended)  
