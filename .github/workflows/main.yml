@@ -1,0 +1,39 @@
+name: CI (simple)
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      # Client
+      - name: Install client
+        run: npm ci
+        working-directory: client
+      - name: Build client
+        run: npm run build --if-present
+        working-directory: client
+      - name: Test client
+        run: npm test --if-present
+        working-directory: client
+
+      # Server
+      - name: Install server
+        run: npm ci
+        working-directory: server
+      - name: Build server
+        run: npm run build --if-present
+        working-directory: server
+      - name: Test server
+        run: npm test --if-present
+        working-directory: server
