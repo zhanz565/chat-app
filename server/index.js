@@ -10,40 +10,33 @@ dotenv.config();
 
 const PORT = process.env.PORT || 8080;
 
-// --- CORS origins (supports comma-separated list) ---
-const parseOrigins = (s) =>
-  (s || '')
-    .split(',')
-    .map(v => v.trim())
-    .filter(Boolean);
+/* -------- CORS: allow localhost and any *.vercel.app -------- */
+const allowedHosts = ['http://localhost:5173'];
+const corsOrigin = (origin, cb) => {
+  if (!origin) return cb(null, true);                              // health checks/curl
+  const isLocal = allowedHosts.includes(origin);
+  const isVercel = /^https:\/\/.*\.vercel\.app$/.test(origin);     // any vercel preview/prod
+  return (isLocal || isVercel) ? cb(null, true)
+                               : cb(new Error(`CORS blocked origin: ${origin}`));
+};
 
-const FALLBACK_ORIGIN = 'http://localhost:5173';
-const ALLOWED_ORIGINS = parseOrigins(
-  process.env.CLIENT_ORIGINS || process.env.CLIENT_ORIGIN
-);
-const ORIGINS = ALLOWED_ORIGINS.length ? ALLOWED_ORIGINS : [FALLBACK_ORIGIN];
-
-// --- Express app ---
+/* ------------------------- Express -------------------------- */
 const app = express();
-app.use(cors({ origin: ORIGINS })); // keep simple; can make callback version later
-
+app.use(cors({ origin: corsOrigin, credentials: true }));
 app.get('/health', (_, res) => res.json({ ok: true }));
-app.get('/', (_, res) => res.send('Chat server running. See /health.'));
+app.get('/',   (_, res) => res.send('Chat server running. See /health.'));
 
-// --- Socket.IO server ---
+/* ------------------------ Socket.IO ------------------------- */
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
-  cors: { origin: ORIGINS, methods: ['GET', 'POST'] }
+  cors: { origin: corsOrigin, credentials: true, methods: ['GET','POST'] }
 });
 
-// in-memory presence (demo only)
+/* ------------------- Demo in-memory presence ---------------- */
 const rooms = new Map(); // roomName -> { users: Map(socketId, user) }
-
-function getRoomUsers(room) {
-  const r = rooms.get(room);
-  if (!r) return [];
-  return Array.from(r.users.values()).map(({ id, name }) => ({ id, name }));
-}
+const getRoomUsers = (room) =>
+  Array.from((rooms.get(room)?.users || new Map()).values())
+       .map(({ id, name }) => ({ id, name }));
 
 io.on('connection', (socket) => {
   console.log('socket connected', socket.id);
@@ -75,12 +68,11 @@ io.on('connection', (socket) => {
     for (const room of socket.rooms) {
       if (room === socket.id) continue;
       const r = rooms.get(room);
-      if (r) {
-        r.users.delete(socket.id);
-        io.to(room).emit('presence', getRoomUsers(room));
-        socket.to(room).emit('system', { id: uuidv4(), type: 'leave', text: `A user left`, at: Date.now() });
-        if (r.users.size === 0) rooms.delete(room);
-      }
+      if (!r) continue;
+      r.users.delete(socket.id);
+      io.to(room).emit('presence', getRoomUsers(room));
+      socket.to(room).emit('system', { id: uuidv4(), type: 'leave', text: `A user left`, at: Date.now() });
+      if (r.users.size === 0) rooms.delete(room);
     }
   });
 });
