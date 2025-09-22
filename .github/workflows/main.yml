@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Set up Node and enable npm cache based on BOTH lockfiles
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: |
+            client/package-lock.json
+            server/package-lock.json
+
+      # Client
+      - name: Install/Build/Test (client)
+        working-directory: client
+        run: |
+          npm ci
+          npm run build --if-present
+          npm test --if-present
+
+      # Server
+      - name: Install/Build/Test (server)
+        working-directory: server
+        run: |
+          npm ci
+          npm run build --if-present
+          npm test --if-present
