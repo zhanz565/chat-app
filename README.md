@@ -1,6 +1,6 @@
 # Chat App — Real-Time Messaging (React + Vite + Socket.IO + Express)
 
-[![CI](https://github.com/zhanz565/chat-app/actions/workflows/ci.yml/badge.svg)](https://github.com/zhanz565/chat-app/actions/workflows/ci.yml)
+[[CI](https://github.com/zhanz565/chat-app/actions/workflows/ci.yml/badge.svg)](https://github.com/zhanz565/chat-app/actions/workflows/ci.yml)
 
 A clean, interview-ready real-time chat application.  
 Client: **Vite + React**. Server: **Express + Socket.IO**.
@@ -20,12 +20,6 @@ Client: **Vite + React**. Server: **Express + Socket.IO**.
 - **Client:** React, Vite
 - **Server:** Node.js, Express, Socket.IO
 - **Tooling:** npm, (optional) Vitest, GitHub Actions
-
----
-
-## 🗺️ Architecture
-client (Vite/React) <——— HTTP (build assets) ——> server (Express)
-    └────────────── WebSocket (Socket.IO) ──────────┘
 
 
 ## 🔧 Prerequisites
