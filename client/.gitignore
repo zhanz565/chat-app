@@ -1,0 +1,22 @@
+# dependencies
+client/node_modules/
+server/node_modules/
+
+# builds
+client/dist/
+server/dist/
+
+# env & logs
+.env
+*.env
+client/.env
+server/.env
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+
+# editor/OS
+.DS_Store
+.idea/
+.vscode/
