@@ -10,24 +10,30 @@ dotenv.config();
 
 const PORT = process.env.PORT || 8080;
 
-// allow comma-separated origins, e.g.
-// CLIENT_ORIGIN=http://localhost:5173,https://your-app.vercel.app
+// --- CORS origins (supports comma-separated list) ---
 const parseOrigins = (s) =>
   (s || '')
     .split(',')
     .map(v => v.trim())
     .filter(Boolean);
 
-const ALLOWED_ORIGINS = parseOrigins(process.env.CLIENT_ORIGIN);
 const FALLBACK_ORIGIN = 'http://localhost:5173';
+const ALLOWED_ORIGINS = parseOrigins(
+  process.env.CLIENT_ORIGINS || process.env.CLIENT_ORIGIN
+);
+const ORIGINS = ALLOWED_ORIGINS.length ? ALLOWED_ORIGINS : [FALLBACK_ORIGIN];
 
+// --- Express app ---
 const app = express();
-app.use(cors({ origin: ALLOWED_ORIGINS.length ? ALLOWED_ORIGINS : FALLBACK_ORIGIN }));
-app.get('/health', (_, res) => res.json({ ok: true }));
+app.use(cors({ origin: ORIGINS })); // keep simple; can make callback version later
 
+app.get('/health', (_, res) => res.json({ ok: true }));
+app.get('/', (_, res) => res.send('Chat server running. See /health.'));
+
+// --- Socket.IO server ---
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
-  cors: { origin: ALLOWED_ORIGINS.length ? ALLOWED_ORIGINS : FALLBACK_ORIGIN, methods: ['GET','POST'] }
+  cors: { origin: ORIGINS, methods: ['GET', 'POST'] }
 });
 
 // in-memory presence (demo only)
